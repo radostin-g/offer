@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Дигитален Каталог | Ядки Ремис</title>
+    <!-- Зареждане на Tailwind CSS за стиловете -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Зареждане на шрифт Inter с поддръжка на кирилица -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Персонализирани цветове и настройки в Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        cream: '#FAF7F2',       // Основен топъл фон
+                        sand: '#F2EBE1',        // Вторичен фон за карти/елементи
+                        espresso: '#2C1E16',    // Тъмнокафяв цвят за текст и акценти
+                        roast: '#4A3525',       // Средно кафяво
+                        amberGold: '#D97706',   // Топъл кехлибарен акцент
+                        amberLight: '#FEF3C7',  // Светъл акцент за баджове
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Скриване на скролбара при хоризонтално превъртане на категориите на мобилни устройства */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* Плавна анимация при отваряне на падащото меню (акордеон) */
+        .accordion-content {
+            transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+        }
+        .accordion-item.active .accordion-content {
+            max-height: 1000px; /* Достатъчно голяма стойност за съдържанието */
+            opacity: 1;
+        }
+        .accordion-item.active .chevron-icon {
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+<body class="bg-cream text-espresso antialiased selection:bg-amberGold selection:text-white">
+
+    <!-- ================= ГОРНА ЧАСТ (ХЕДЪР С БРАНД) ================= -->
+    <!-- Тук можете да смените името на фирмата, логото и слогана -->
+    <header class="bg-espresso text-cream sticky top-0 z-30 shadow-md">
+        <div class="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <!-- Място за лого (SVG икона на жълъд/ядка, може да се смени с <img>) -->
+                <div class="w-11 h-11 rounded-xl bg-amberGold/20 border border-amberGold/40 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-6 h-6 text-amberGold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-lg sm:text-xl font-bold tracking-tight text-white leading-tight">
+                        "РЕМИС - РУМЕН РАЙНОВ" ЕТ
+                    </h1>
+                    <p class="text-xs text-amber-200/80 font-normal">
+                        Продуктов каталог &bull; Подбрано качество
+                    </p>
+                </div>
+            </div>
+
+            <!-- Бърз бутон към контактите в долната част -->
+            <a href="#contact-section" class="px-3.5 py-2 rounded-xl bg-amberGold hover:bg-amber-600 text-white text-xs sm:text-sm font-medium transition-colors shadow-sm flex items-center gap-1.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                </svg>
+                <span>Контакт</span>
+            </a>
+        </div>
+
+        <!-- ================= НАВИГАЦИЯ ПО КАТЕГОРИИ ================= -->
+        <div class="bg-roast/95 border-t border-white/10">
+            <div class="max-w-3xl mx-auto px-4 py-2.5 flex items-center gap-2 overflow-x-auto no-scrollbar" id="category-filters">
+                <!-- Бутоните за категории се генерират автоматично или могат да се редактират тук -->
+                <button data-category="all" class="filter-btn active px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap transition-all bg-amberGold text-white shadow-sm">
+                    Всички
+                </button>
+                <button data-category="roasted" class="filter-btn px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap transition-all bg-white/10 text-amber-100 hover:bg-white/20">
+                    Печени ядки
+                </button>
+                <button data-category="raw" class="filter-btn px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap transition-all bg-white/10 text-amber-100 hover:bg-white/20">
+                    Сурови ядки
+                </button>
+                <button data-category="mixes" class="filter-btn px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap transition-all bg-white/10 text-amber-100 hover:bg-white/20">
+                    Миксове
+                </button>
+                <button data-category="dried" class="filter-btn px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap transition-all bg-white/10 text-amber-100 hover:bg-white/20">
+                    Сушени плодове
+                </button>
+				<button data-category="snacks" class="filter-btn px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap transition-all bg-white/10 text-amber-100 hover:bg-white/20">
+                    Снаксове
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ================= ОСНОВНО СЪДЪРЖАНИЕ (СПИСЪК С АРТИКУЛИ) ================= -->
+    <main class="max-w-3xl mx-auto px-4 py-6">
+        
+        <!-- Информационен банер и търсачка -->
+        <div class="mb-6 space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                    <h2 class="text-xl font-bold text-espresso">Асортимент</h2>
+                    <p class="text-xs sm:text-sm text-roast/80">Изберете артикул, за да разгледате снимка, произход и разфасовки.</p>
+                </div>
+                <!-- Брояч на показаните продукти -->
+                <span id="product-count" class="text-xs font-medium px-3 py-1 rounded-full bg-sand text-roast self-start sm:self-auto">
+                    Показани: 7 артикула
+                </span>
+            </div>
+
+            <!-- Поле за бързо търсене -->
+            <div class="relative">
+                <input type="text" id="search-input" placeholder="Търсене по име (напр. бадем, кашу, микс)..." 
+                    class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-stone-200 text-sm text-espresso placeholder-stone-400 focus:outline-none focus:border-amberGold focus:ring-2 focus:ring-amberGold/20 transition-all shadow-sm">
+                <svg class="w-4 h-4 text-stone-400 absolute left-3.5 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Контейнер, в който JavaScript зарежда бутоните за всеки продукт -->
+        <div id="products-container" class="space-y-3">
+            <!-- Продуктите се вмъкват динамично от скрипта по-долу -->
+        </div>
+
+        <!-- Съобщение при липса на резултати от търсенето -->
+        <div id="empty-state" class="hidden text-center py-12 bg-white rounded-2xl border border-stone-200/80 shadow-sm">
+            <p class="text-base font-medium text-espresso">Няма намерени артикули</p>
+            <p class="text-xs text-roast/70 mt-1">Опитайте с друга дума или изберете категория „Всички“.</p>
+        </div>
+
+    </main>
+
+    <!-- ================= ДОЛНА ЧАСТ (КОНТАКТ С ПРЕДСТАВИТЕЛ) ================= -->
+    <footer id="contact-section" class="bg-espresso text-cream mt-12 pt-10 pb-12 rounded-t-3xl shadow-inner">
+        <div class="max-w-3xl mx-auto px-4">
+            <div class="bg-roast/60 border border-white/10 rounded-2xl p-6 sm:p-8 text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-6">
+                <div class="space-y-2 max-w-md">
+                    <span class="inline-block px-3 py-1 rounded-full bg-amberGold/20 text-amberGold text-xs font-semibold tracking-wide uppercase">
+                        B2B &amp; Дистрибуция
+                    </span>
+                    <h3 class="text-xl sm:text-2xl font-bold text-white">
+                        Запитване и контакт с представител
+                    </h3>
+                    <p class="text-xs sm:text-sm text-amber-100/80 leading-relaxed">
+                        Този каталог е с информативна цел. За актуални ценови листи, търговски условия, мостри или заявки за обекти, свържете се директно с нашия екип.
+                    </p>
+                </div>
+
+                <!-- Бутони за директна връзка (Телефон, Viber, Имейл) -->
+                <div class="flex flex-col w-full sm:w-auto gap-2.5 flex-shrink-0">
+                    <a href="tel:+359888123456" class="flex items-center justify-center gap-2.5 px-5 py-3 rounded-xl bg-amberGold hover:bg-amber-600 text-white font-semibold text-sm transition-all shadow-md">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                        </svg>
+                        <span>+359894789636</span>
+                    </a>
+
+                    <a href="viber://chat?number=%2B+359894789636" class="flex items-center justify-center gap-2.5 px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium text-sm border border-white/15 transition-all">
+                        <svg class="w-4 h-4 text-purple-300" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M11.4 0C5.5 0 .8 4.4.8 10.1c0 3.1 1.4 5.9 3.7 7.8v3.8c0 .5.6.8 1 .5l3.3-2.3c.8.2 1.7.3 2.6.3 5.9 0 10.6-4.4 10.6-10.1S17.3 0 11.4 0zm5.3 14.3c-.2.6-1.2 1.2-1.7 1.3-.5.1-1.1.2-3.6-.8-3-1.2-4.9-4.2-5.1-4.4-.1-.2-1.2-1.6-1.2-3.1 0-1.5.8-2.2 1.1-2.5.3-.3.6-.4.8-.4h.6c.2 0 .5-.1.7.5.3.6.9 2.2 1 2.4.1.2.1.4 0 .6-.1.2-.2.3-.4.5-.2.2-.4.4-.5.6-.2.2-.4.4-.2.7.2.3.8 1.4 1.8 2.2 1.2 1.1 2.2 1.4 2.6 1.6.3.1.5.1.7-.1.2-.2.8-.9 1-1.2.2-.3.4-.3.7-.2.3.1 1.8.8 2.1 1 .3.2.5.2.6.4.1.2.1.8-.1 1.4z"/>
+                        </svg>
+                        <span>Пишете във Viber</span>
+                    </a>
+
+                    <a href="https://www.remisbg.com" target="_blank" class="flex items-center justify-center gap-2.5 px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium text-sm border border-white/15 transition-all">
+                        <svg class="w-4 h-4 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                        <span>www.remisbg.com</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="mt-8 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between text-xs text-amber-100/50 gap-2">
+                <p>&copy; 2026   ЕТ "РЕМИС - РУМЕН РАЙНОВ".   Всички права запазени.</p>
+                <p>с. Хаджидимитрово, област Ямбол</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ================= ДАННИ ЗА ПРОДУКТИТЕ И ЛОГИКА (JAVASCRIPT) ================= -->
+    <script>
+        /**
+         * ============================================================================
+         * СПИСЪК С ПРОДУКТИ (ЛЕСНО РЕДАКТИРАНЕ)
+         * ============================================================================
+         * За да добавите нов продукт или да редактирате съществуващ:
+         * - id: Уникален номер
+         * - category: 'roasted' (Печени), 'raw' (Сурови), 'mixes' (Миксове), 'dried' (Сушени плодове)
+         * - categoryLabel: Текстът на етикета, който се вижда върху бутона
+         * - name: Име на продукта
+         * - shortInfo: Кратък подзаглавен текст (напр. "Хрупкав, леко осолен")
+         * - image: Линк към снимка на продукта (препоръчително съотношение 16:9 или 4:3)
+         * - description: Подробно описание на вкуса и качествата
+         * - origin: Държава на произход
+         * - processing: Начин на обработка (печене, сушене и т.н.)
+         * - weights: Масив с наличните разфасовки (напр. ["50 г", "100 г", "500 г", "1 кг"])
+         * - shelfLife: Срок на годност
+         * - ingredients: Състав и информация за алергени
+         * - tags: Допълнителни характеристики (напр. "Без глутен", "Източник на протеин")
+         */
+        const productsData = [
+            {
+                id: 1,
+                category: "roasted",
+                categoryLabel: "Печени ядки",
+                name: "Печен бадем (Калифорния)",
+                shortInfo: "Хрупкав, деликатно изпечен на горещ въздух с морска сол",
+                image: "https://images.unsplash.com/photo-1508061253366-f7da158b6d46?auto=format&fit=crop&w=800&q=80",
+                description: "Висококачествен едър бадем сорт Nonpareil. Изпечен по специална технология без добавена мазнина, което запазва естествената сладост и хрупкавост на ядката.",
+                origin: "САЩ (Калифорния)",
+                processing: "Сухо печене на горещ въздух, леко осолен",
+                weights: ["70 г", "150 г", "500 г", "1 кг", "5 кг (B2B)"],
+                shelfLife: "9 месеца",
+                ingredients: "Бадемови ядки (98.5%), фина морска сол (1.5%). Алергени: Съдържа бадеми.",
+                tags: ["Без палмова мазнина", "Висок протеин", "Веган"]
+            },
+            {
+                id: 2,
+                category: "raw",
+                categoryLabel: "Сурови ядки",
+                name: "Сурово кашу W240",
+                shortInfo: "Едри, цели бели ядки с мек и маслен вкус",
+                image: "https://images.unsplash.com/photo-1509358271058-acd22cc93898?auto=format&fit=crop&w=800&q=80",
+                description: "Първокласно сурово кашу клас W240 (едър калибър). Отличава се с кремообразна текстура и естествена сладост. Подходящо както за директна консумация, така и за кулинария и сладкарство.",
+                origin: "Виетнам / Индия",
+                processing: "Суров продукт, преминал през парно белене",
+                weights: ["80 г", "150 г", "500 г", "1 кг", "10 кг кашон"],
+                shelfLife: "12 месеца",
+                ingredients: "100% сурови ядки кашу. Алергени: Съдържа кашу.",
+                tags: ["100% Натурално", "Без сол", "Богато на магнезий"]
+            },
+            {
+                id: 3,
+                category: "roasted",
+                categoryLabel: "Печени ядки",
+                name: "Печен лешник",
+                shortInfo: "Ароматен лешник с наситен вкус и хрупкава сърцевина",
+                image: "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=800&q=80",
+                description: "Подбрани кръгли лешници с висок процент на масленост. Бавното печене разгръща богатия естествен аромат на ядката и премахва по-голямата част от люспата.",
+                origin: "Турция / България",
+                processing: "Бавно печене, натурален (без сол) или леко осолен",
+                weights: ["70 г", "150 г", "500 г", "1 кг"],
+                shelfLife: "9 месеца",
+                ingredients: "Лешникови ядки (100%). Алергени: Съдържа лешници.",
+                tags: ["Богат на витамин Е", "Без глутен", "Натурален аромат"]
+            },
+            {
+                id: 4,
+                category: "roasted",
+                categoryLabel: "Печени ядки",
+                name: "Шамфъстък печен и осолен",
+                shortInfo: "Естествено разпукан, едър калибър с фина сол",
+                image: "https://images.unsplash.com/photo-1583068087621-24472a4a7965?auto=format&fit=crop&w=800&q=80",
+                description: "Премиум шамфъстък с висок процент естествено отворени черупки и наситено зелена ядка. Перфектно балансирана соленост, предпочитан избор за заведения и търговски обекти.",
+                origin: "САЩ / Иран",
+                processing: "Печен с морска сол",
+                weights: ["60 г", "120 г", "500 г", "1 кг"],
+                shelfLife: "10 месеца",
+                ingredients: "Шамфъстък с черупка (98%), сол (2%). Алергени: Съдържа шамфъстък.",
+                tags: ["Топ продукт", "Естествено отворен", "Източник на фибри"]
+            },
+            {
+                id: 5,
+                category: "mixes",
+                categoryLabel: "Миксове",
+                name: "Студентски микс (Енергия)",
+                shortInfo: "Балансирана комбинация от сурови ядки и стафиди",
+                image: "https://images.unsplash.com/photo-1596591606975-97ee5cef3a1e?auto=format&fit=crop&w=800&q=80",
+                description: "Класическа енергийна смес, съчетаваща хрупкави сурови бадеми, кашу, лешници, орехови ядки и сладки едри стафиди. Идеална за бързо възстановяване през деня.",
+                origin: "Смесен произход (пакетирано в България)",
+                processing: "Сурова смес без термична обработка",
+                weights: ["100 г", "200 г", "500 г", "1 кг"],
+                shelfLife: "8 месеца",
+                ingredients: "Стафиди (30%), суров бадем (20%), сурово кашу (20%), суров лешник (15%), орехови ядки (15%).",
+                tags: ["Бърза енергия", "Без добавена захар", "Суров микс"]
+            },
+            {
+                id: 6,
+                category: "roasted",
+                categoryLabel: "Печени ядки",
+                name: "Печена царевица (Барбекю / Сол)",
+                shortInfo: "Едри, изключително хрупкави зърна печена царевица",
+                image: "https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&w=800&q=80",
+                description: "Традиционна испанска едра царевица, изпечена до златисто за максимална хрупкавост. Предлага се във вариант с морска сол или с ароматна подправка барбекю.",
+                origin: "Испания",
+                processing: "Печена и овкусена",
+                weights: ["80 г", "150 г", "500 г", "1 кг"],
+                shelfLife: "9 месеца",
+                ingredients: "Царевица (82%), слънчогледово масло, сол / подправка барбекю.",
+                tags: ["Подходящо за заведения", "Супер хрупкава", "Без глутен"]
+            },
+            {
+                id: 7,
+                category: "dried",
+                categoryLabel: "Сушени плодове",
+                name: "Сушена червена боровинка",
+                shortInfo: "Сочни цели плодове с приятно сладко-кисел вкус",
+                image: "https://images.unsplash.com/photo-1606923829579-0cb981a83e2e?auto=format&fit=crop&w=800&q=80",
+                description: "Подбрани цели плодове от американска червена боровинка, нежно изсушени за запазване на мекотата и наситения рубинен цвят. Отлична добавка към мюсли, салати или за директна консумация.",
+                origin: "САЩ / Канада",
+                processing: "Нежно сушене",
+                weights: ["100 г", "250 г", "500 г", "1 кг"],
+                shelfLife: "12 месеца",
+                ingredients: "Червена боровинка (60%), захар от захарна тръстика (39%), слънчогледово масло (<1%).",
+                tags: ["Антиоксиданти", "Сочна текстура", "Без консерванти"]
+            }
+        ];
+
+        // Елементи от DOM дървото
+        const productsContainer = document.getElementById('products-container');
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const searchInput = document.getElementById('search-input');
+        const productCountEl = document.getElementById('product-count');
+        const emptyStateEl = document.getElementById('empty-state');
+
+        let currentCategory = 'all';
+        let currentSearchQuery = '';
+
+        /**
+         * Функция за рендиране (рисуване) на списъка с продукти
+         */
+        function renderProducts() {
+            // Филтриране по категория и текст в търсачката
+            const filteredProducts = productsData.filter(product => {
+                const matchesCategory = currentCategory === 'all' || product.category === currentCategory;
+                const searchLower = currentSearchQuery.toLowerCase().trim();
+                const matchesSearch = product.name.toLowerCase().includes(searchLower) || 
+                                      product.shortInfo.toLowerCase().includes(searchLower) ||
+                                      product.description.toLowerCase().includes(searchLower);
+                return matchesCategory && matchesSearch;
+            });
+
+            // Обновяване на брояча
+            const countText = filteredProducts.length === 1 
+                ? 'Показан: 1 артикул' 
+                : `Показани: ${filteredProducts.length} артикула`;
+            productCountEl.textContent = countText;
+
+            // Изчистване на контейнера
+            productsContainer.innerHTML = '';
+
+            // Показване или скриване на съобщението за липса на резултати
+            if (filteredProducts.length === 0) {
+                emptyStateEl.classList.remove('hidden');
+                return;
+            } else {
+                emptyStateEl.classList.add('hidden');
+            }
+
+            // Създаване на HTML карта с падащ панел за всеки продукт
+            filteredProducts.forEach(product => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'accordion-item bg-white rounded-2xl border border-stone-200/90 shadow-sm hover:border-amberGold/50 transition-colors overflow-hidden';
+                
+                // Генериране на баджовете за разфасовки
+                const weightsHtml = product.weights.map(w => 
+                    `<span class="px-2.5 py-1 rounded-lg bg-sand text-espresso text-xs font-semibold border border-stone-200/70">${w}</span>`
+                ).join('');
+
+                // Генериране на допълнителните тагове
+                const tagsHtml = product.tags.map(tag => 
+                    `<span class="px-2.5 py-0.5 rounded-full bg-amberLight text-amber-900 text-[11px] font-medium">${tag}</span>`
+                ).join('');
+
+                itemEl.innerHTML = `
+                    <!-- БУТОН ЗА ОТВАРЯНЕ / ЗАТВАРЯНЕ НА ПРОДУКТА -->
+                    <button type="button" class="accordion-trigger w-full px-4 py-4 sm:px-5 sm:py-4 flex items-center justify-between text-left gap-3 focus:outline-none focus-visible:bg-sand/50" aria-expanded="false">
+                        <div class="flex items-center gap-3.5 min-w-0">
+                            <!-- Малка кръгла миниатюра на снимката в затворен вид -->
+                            <img src="${product.image}" 
+                                 alt="${product.name}" 
+                                 onerror="this.src='https://placehold.co/120x120/F2EBE1/4A3525?text=Ядки'"
+                                 class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl object-cover flex-shrink-0 border border-stone-200 bg-sand">
+                            
+                            <div class="min-w-0">
+                                <div class="flex items-center gap-2 mb-0.5">
+                                    <span class="text-[11px] font-semibold uppercase tracking-wider text-amberGold">
+                                        ${product.categoryLabel}
+                                    </span>
+                                </div>
+                                <h3 class="text-base sm:text-lg font-bold text-espresso truncate">
+                                    ${product.name}
+                                </h3>
+                                <p class="text-xs text-roast/75 truncate">
+                                    ${product.shortInfo}
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Икона стрелка надолу, която се завърта при отваряне -->
+                        <div class="w-8 h-8 rounded-full bg-sand/80 flex items-center justify-center flex-shrink-0 text-espresso">
+                            <svg class="chevron-icon w-4 h-4 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </div>
+                    </button>
+
+                    <!-- ПАДАЩО МЕНЮ С ДЕТАЙЛИ И ГОЛЯМА СНИМКА -->
+                    <div class="accordion-content bg-cream/40 border-t border-stone-100">
+                        <div class="p-4 sm:p-6 space-y-5">
+                            
+                            <!-- Снимка и основно описание -->
+                            <div class="grid grid-cols-1 sm:grid-cols-12 gap-4 sm:gap-6 items-start">
+                                <div class="sm:col-span-5">
+                                    <div class="aspect-[4/3] w-full rounded-xl overflow-hidden border border-stone-200 bg-sand shadow-inner">
+                                        <img src="${product.image}" 
+                                             alt="${product.name}" 
+                                             onerror="this.src='https://placehold.co/600x450/F2EBE1/4A3525?text=Снимка+на+продукта'"
+                                             class="w-full h-full object-cover">
+                                    </div>
+                                </div>
+
+                                <div class="sm:col-span-7 space-y-3">
+                                    <div class="flex flex-wrap gap-1.5">
+                                        ${tagsHtml}
+                                    </div>
+                                    <p class="text-sm text-espresso/90 leading-relaxed">
+                                        ${product.description}
+                                    </p>
+                                    
+                                    <!-- Налични разфасовки -->
+                                    <div class="pt-1">
+                                        <span class="block text-xs font-semibold text-roast/70 uppercase tracking-wider mb-2">
+                                            Предлагани разфасовки:
+                                        </span>
+                                        <div class="flex flex-wrap gap-1.5">
+                                            ${weightsHtml}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Таблица с характеристики (Произход, Обработка, Срок, Състав) -->
+                            <div class="bg-white rounded-xl p-3.5 sm:p-4 border border-stone-200/80 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm">
+                                <div>
+                                    <span class="text-roast/60 block text-xs">Произход:</span>
+                                    <span class="font-semibold text-espresso">${product.origin}</span>
+                                </div>
+                                <div>
+                                    <span class="text-roast/60 block text-xs">Обработка:</span>
+                                    <span class="font-semibold text-espresso">${product.processing}</span>
+                                </div>
+                                <div>
+                                    <span class="text-roast/60 block text-xs">Срок на годност:</span>
+                                    <span class="font-semibold text-espresso">${product.shelfLife}</span>
+                                </div>
+                                <div>
+                                    <span class="text-roast/60 block text-xs">Състав и алергени:</span>
+                                    <span class="font-medium text-espresso">${product.ingredients}</span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                `;
+
+                // Добавяне на събитие при клик върху бутона за отваряне/затваряне
+                const triggerBtn = itemEl.querySelector('.accordion-trigger');
+                triggerBtn.addEventListener('click', () => {
+                    const isCurrentlyActive = itemEl.classList.contains('active');
+                    
+                    // Затваряне на всички останали отворени артикули за по-изчистен изглед
+                    document.querySelectorAll('.accordion-item').forEach(el => {
+                        el.classList.remove('active');
+                        el.querySelector('.accordion-trigger').setAttribute('aria-expanded', 'false');
+                    });
+
+                    // Ако текущият не е бил отворен, го отваряме
+                    if (!isCurrentlyActive) {
+                        itemEl.classList.add('active');
+                        triggerBtn.setAttribute('aria-expanded', 'true');
+                    }
+                });
+
+                productsContainer.appendChild(itemEl);
+            });
+        }
+
+        // Слушатели за бутоните за филтриране по категория
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Премахване на активния стил от всички бутони
+                filterButtons.forEach(b => {
+                    b.classList.remove('bg-amberGold', 'text-white', 'shadow-sm');
+                    b.classList.add('bg-white/10', 'text-amber-100');
+                });
+
+                // Добавяне на активен стил към натиснатия бутон
+                btn.classList.remove('bg-white/10', 'text-amber-100');
+                btn.classList.add('bg-amberGold', 'text-white', 'shadow-sm');
+
+                currentCategory = btn.getAttribute('data-category');
+                renderProducts();
+            });
+        });
+
+        // Слушател за полето за търсене
+        searchInput.addEventListener('input', (e) => {
+            currentSearchQuery = e.target.value;
+            renderProducts();
+        });
+
+        // Първоначално зареждане на продуктите при отваряне на страницата
+        renderProducts();
+    </script>
+</body>
+</html>
